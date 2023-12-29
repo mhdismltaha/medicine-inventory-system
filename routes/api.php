@@ -3,6 +3,7 @@
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\MedicineController;
+use App\Http\Controllers\OrderController;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -49,9 +50,13 @@ Route::group([
     Route::delete('/{id}', [CategoryController::class, 'destroy']);
 });
 
-//Route::post()
-
-//Route::group(['middleware' => ['auth:sanctum']], function () {
-//Route::Post('/signup', [UserController::class, 'Sign_up']);
-
-  //  });
+Route::group([
+    'middleware' => 'api',
+    'prefix' => 'orders'
+], function () {
+    Route::get('/', [OrderController::class, 'index']);
+    Route::get('/{id}', [OrderController::class, 'show']);
+    Route::post('/', [OrderController::class, 'store']);
+    Route::put('/{id}', [OrderController::class, 'update']);
+    Route::delete('/{id}', [OrderController::class, 'destroy']);
+});
