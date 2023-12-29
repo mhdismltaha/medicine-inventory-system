@@ -45,7 +45,8 @@ class User extends Authenticatable implements JWTSubject
         'phone_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
-    public function getJWTIdentifier() {
+    public function getJWTIdentifier()
+    {
         return $this->getKey();
     }
     /**
@@ -53,7 +54,13 @@ class User extends Authenticatable implements JWTSubject
      *
      * @return array
      */
-    public function getJWTCustomClaims() {
+    public function getJWTCustomClaims()
+    {
         return [];
+    }
+
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
     }
 }
