@@ -67,7 +67,7 @@ class CategoryController extends Controller
 
         $category = Category::find($id);
         if (!$category) {
-            return response()->json([], 404);
+            return response()->json(['id not exsiting'], 404);
         }
         $category->update($request->all());
 
@@ -81,7 +81,7 @@ class CategoryController extends Controller
     {
         $category = Category::find($id);
         if (!$category) {
-            return response()->json([], 404);
+            return response()->json(['id not exsiting'], 404);
         }
 
         Category::destroy($id);
