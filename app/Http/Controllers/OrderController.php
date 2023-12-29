@@ -11,6 +11,17 @@ use Illuminate\Support\Facades\Validator;
 
 class OrderController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth:api');
+        $this->middleware('role:admin|pharmacist')->except([
+            'store'
+        ]);
+        $this->middleware('role:pharmacist')->only([
+            'store',
+        ]);
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -19,7 +30,7 @@ class OrderController extends Controller
         $customer_id = request("customer_id");
         $status = request("status");
 
-        $query = Order::query()->with('items');
+        $query = Order::query()->with('items')->with('customer');
         if ($customer_id) {
             $query = $query->where("customer_id", "=", $customer_id);
         }
@@ -27,7 +38,14 @@ class OrderController extends Controller
         if ($status) {
             $query = $query->where("status", "=", $status);
         }
-        
+
+        // Admin can show all orders
+        // pharmacist can show his orders only
+        $user = auth()->user();
+        if ($user->hasRole('pharmacist')) {
+            $query = $query->where('customer_id', $user->id);
+        }
+
         return response()->json([
             'success' => true,
             'message' => 'success',
@@ -48,15 +66,16 @@ class OrderController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        // $user = auth('api')->user();
+        $user = auth()->user();
         $items = $request->items;
 
         $order = Order::create([
-            'customer_id' => 1,
+            'customer_id' => $user->id,
             'items' => $items,
             'status' => 'pending',
             'order_date' => Carbon::now(),
             'total_amount' => 0,
+            'payment_status' => false,
         ]);
         $total_amount = 0;
 
@@ -84,7 +103,7 @@ class OrderController extends Controller
                     ], 422);
                 }
 
-                if (!$medicine->quantity < $item['quantity']) {
+                if ($medicine->quantity < $item['quantity']) {
                     $validator->errors()->add('medicine_id', 'No enough quantity');
                     return response()->json([
                         'message' => 'Bad request',
@@ -152,11 +171,32 @@ class OrderController extends Controller
 
         foreach ($order->items as $item) {
             if ($order->status == 'delivering') {
-                $medicine = Medicine::find($item->id);
+                $medicine = Medicine::find($item->medicine_id);
                 $medicine->quantity = $medicine->quantity - $item->quantity;
                 $medicine->save();
             }
         }
+
+        return response()->json($order, 200);
+    }
+
+    public function updatePaymentStatus(Request $request, $id)
+    {
+        $validator = Validator::make($request->all(), [
+            'status' => 'in:paid,unpaid',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $order = Order::with('items')->where('id', $id)->first();
+        if (!$order) {
+            return response()->json([], 404);
+        }
+
+        $order->payment_status = $request->status == "paid" ? true : false;
+        $order->save();
 
         return response()->json($order, 200);
     }

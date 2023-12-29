@@ -5,18 +5,40 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Http\Requests\StoreCategoryRequest;
 use App\Http\Requests\UpdateCategoryRequest;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
 class CategoryController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth:api');
+        $this->middleware('role:admin')->except([
+            'index',
+        ]);
+        $this->middleware('role:pharmacist|admin')->only([
+            'index'
+        ]);
+    }
+
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
+        $search = $request->query("search");
+
+        if ($search) {
+            return response()->json([
+                'success' => true,
+                'message' => 'success',
+                'data' => Category::where('name', 'like', '%' . $search . '%')->get()
+            ]);
+        }
+
         return response()->json([
             'success' => true,
-            'message' => 'succcess',
+            'message' => 'success',
             'data' => Category::all()
         ]);
     }
@@ -69,6 +91,7 @@ class CategoryController extends Controller
         if (!$category) {
             return response()->json(['id not exsiting'], 404);
         }
+        
         $category->update($request->all());
 
         return response()->json($category, 200);

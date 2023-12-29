@@ -13,7 +13,12 @@ class Order extends Model
         "customer_id",
         "order_date",
         "total_amount",
-        "status"
+        "status",
+        "payment_status"
+    ];
+
+    protected $casts = [
+        'total_amount' => 'double'
     ];
 
     public function customer()

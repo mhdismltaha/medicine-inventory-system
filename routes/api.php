@@ -58,5 +58,6 @@ Route::group([
     Route::get('/{id}', [OrderController::class, 'show']);
     Route::post('/', [OrderController::class, 'store']);
     Route::put('/{id}', [OrderController::class, 'update']);
+    Route::put('/{id}/payment', [OrderController::class, 'updatePaymentStatus']);
     Route::delete('/{id}', [OrderController::class, 'destroy']);
 });

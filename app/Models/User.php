@@ -56,11 +56,16 @@ class User extends Authenticatable implements JWTSubject
      */
     public function getJWTCustomClaims()
     {
-        return [];
+        return ['role'];
     }
 
     public function orders()
     {
         return $this->hasMany(Order::class);
+    }
+
+    public function favorites()
+    {
+        return $this->hasManyThrough(Medicine::class, Favorite::class);
     }
 }

@@ -5,24 +5,18 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class OrderItem extends Model
+class Favorite extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        "order_id",
-        "medicine_id",
-        "quantity",
-        "sale_price",
+        'user_id',
+        'medicine_id'
     ];
 
-    protected $casts = [
-        "sale_price"=> "double"
-    ];
-
-    public function order()
+    public function user()
     {
-        return $this->belongsTo(Order::class);
+        return $this->belongsTo(User::class);
     }
 
     public function medicine()
